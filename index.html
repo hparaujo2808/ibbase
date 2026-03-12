@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ibbase — Repositório de Provas</title>
+  <title>IB Base — Repositório de Materiais</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
@@ -39,18 +39,24 @@
         <span class="dot"></span> Acesso gratuito para todos os estudantes
       </div>
       <h1 class="hero-title animate-fade-up" style="animation-delay:0.2s">
-        Seu repositório de<br /><em>provas antigas</em>
+        Seu repositório de<br /><em>materiais e provas</em>
       </h1>
       <p class="hero-sub animate-fade-up" style="animation-delay:0.35s">
-        Encontre, estude e se prepare com provas reais de semestres anteriores. Organizado por matéria e seção.
+        Encontre provas, exercícios e materiais organizados por matéria e seção.
       </p>
+
+      <!-- SEARCH -->
       <div class="hero-search animate-fade-up" style="animation-delay:0.5s">
         <div class="search-wrap">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="searchInput" placeholder="Buscar matéria..." />
+          <input type="text" id="searchInput" placeholder="Buscar matéria, seção ou material..." autocomplete="off" />
         </div>
         <button class="btn-primary" onclick="doSearch()">Pesquisar</button>
       </div>
+
+      <!-- SEARCH RESULTS DROPDOWN -->
+      <div class="search-results" id="searchResults"></div>
+
       <div class="hero-stats animate-fade-up" style="animation-delay:0.65s">
         <div class="stat"><strong id="statMaterias">—</strong><span>Matérias</span></div>
         <div class="stat-divider"></div>
@@ -110,7 +116,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2025 Ibbase. Feito para estudantes, por estudantes.</p>
+        <p>© 2025 IB Base. Feito para estudantes, por estudantes.</p>
         <a href="#" id="adminSecretLink" class="admin-secret-link">⚙</a>
       </div>
     </div>
@@ -123,14 +129,8 @@
       <p>Digite suas credenciais para continuar.</p>
       <div class="modal-error" id="loginError"></div>
       <form id="loginForm">
-        <div class="form-group">
-          <label>Usuário</label>
-          <input type="text" id="loginUser" placeholder="Digite o usuário" required autocomplete="off" />
-        </div>
-        <div class="form-group">
-          <label>Senha</label>
-          <input type="password" id="loginPass" placeholder="Digite a senha" required />
-        </div>
+        <div class="form-group"><label>Usuário</label><input type="text" id="loginUser" placeholder="Digite o usuário" required autocomplete="off" /></div>
+        <div class="form-group"><label>Senha</label><input type="password" id="loginPass" placeholder="Digite a senha" required /></div>
         <button type="submit" class="btn-submit">Entrar</button>
         <button type="button" id="loginCancel" style="width:100%;margin-top:8px;background:none;border:none;color:var(--gray-500);cursor:pointer;font-size:0.9rem;padding:8px;">Cancelar</button>
       </form>
@@ -141,6 +141,9 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const sb = createClient('https://wkvevriartrmlzwduqdm.supabase.co','sb_publishable_EHcv5fzl0Cm5s7hp2lVc0Q_e9YOyuKi');
+
+    // Cache for search
+    let searchCache = { materias: [], secoes: [], conteudos: [] };
 
     async function load() {
       const { data: materias } = await sb.from('materias').select('id, nome, descricao').order('nome');
@@ -153,17 +156,22 @@
       const footerList = document.getElementById('footerMaterias');
 
       if (!materias?.length) {
-        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><p>Nenhuma matéria cadastrada ainda.<br>O administrador irá adicionar em breve!</p></div>`;
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><p>Nenhuma matéria cadastrada ainda.</p></div>`;
         return;
       }
 
-      // Count conteudos per materia via secoes
       const { data: secoes } = await sb.from('secoes').select('id, materia_id');
       const { data: conteudos } = await sb.from('conteudos').select('id, secao_id');
 
+      // Build search cache
+      searchCache.materias = materias;
+      const { data: todasSecoes } = await sb.from('secoes').select('*, materias(nome)');
+      const { data: todosConteudos } = await sb.from('conteudos').select('*, secoes(nome, materia_id, materias(nome))');
+      searchCache.secoes = todasSecoes || [];
+      searchCache.conteudos = todosConteudos || [];
+
       const secaoMap = {};
       secoes?.forEach(s => { secaoMap[s.id] = s.materia_id; });
-
       const countMap = {};
       conteudos?.forEach(c => {
         const mid = secaoMap[c.secao_id];
@@ -184,11 +192,71 @@
 
       footerList.innerHTML = materias.slice(0,5).map(m => `<a href="materia.html?id=${m.id}">${m.nome}</a>`).join('');
 
-      // Scroll reveal
       document.querySelectorAll('.materia-card').forEach(el => {
         el.style.opacity='0'; el.style.transform='translateY(24px)'; el.style.transition='opacity 0.6s ease, transform 0.6s ease';
         new IntersectionObserver(([e]) => { if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';}},{threshold:0.1}).observe(el);
       });
+    }
+
+    // SEARCH
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (q.length < 2) { searchResults.innerHTML = ''; searchResults.classList.remove('open'); return; }
+      runSearch(q);
+    });
+
+    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.hero-search') && !e.target.closest('.search-results')) {
+        searchResults.classList.remove('open');
+      }
+    });
+
+    window.doSearch = function() {
+      const q = searchInput.value.trim().toLowerCase();
+      if (q.length < 2) return;
+      runSearch(q);
+    };
+
+    function runSearch(q) {
+      const results = [];
+
+      searchCache.materias.forEach(m => {
+        if (m.nome.toLowerCase().includes(q) || (m.descricao||'').toLowerCase().includes(q)) {
+          results.push({ type: 'materia', label: m.nome, sub: 'Matéria', url: `materia.html?id=${m.id}`, icon: '📚' });
+        }
+      });
+
+      searchCache.secoes.forEach(s => {
+        if (s.nome.toLowerCase().includes(q)) {
+          results.push({ type: 'secao', label: s.nome, sub: `Seção em ${s.materias?.nome || ''}`, url: `materia.html?id=${s.materia_id}`, icon: '📂' });
+        }
+      });
+
+      searchCache.conteudos.forEach(c => {
+        if (c.nome.toLowerCase().includes(q) || (c.tipo||'').toLowerCase().includes(q) || (c.semestre||'').toLowerCase().includes(q)) {
+          results.push({ type: 'conteudo', label: c.nome, sub: `${c.secoes?.materias?.nome || ''} › ${c.secoes?.nome || ''} ${c.semestre ? '· '+c.semestre : ''}`, url: c.arquivo_url, icon: '📄', download: true });
+        }
+      });
+
+      if (!results.length) {
+        searchResults.innerHTML = `<div class="search-empty">Nenhum resultado para "<strong>${searchInput.value}</strong>"</div>`;
+      } else {
+        searchResults.innerHTML = results.slice(0,8).map(r => `
+          <a href="${r.url}" ${r.download ? 'target="_blank"' : ''} class="search-result-item">
+            <span class="search-result-icon">${r.icon}</span>
+            <div class="search-result-info">
+              <span class="search-result-label">${r.label}</span>
+              <span class="search-result-sub">${r.sub}</span>
+            </div>
+            <span class="search-result-type ${r.type}">${r.type === 'materia' ? 'Matéria' : r.type === 'secao' ? 'Seção' : 'Arquivo'}</span>
+          </a>`).join('');
+      }
+      searchResults.classList.add('open');
     }
 
     load();
