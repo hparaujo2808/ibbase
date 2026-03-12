@@ -2,10 +2,28 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — Ibbase</title>
+  <title>Admin — IB Base</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    /* EDIT MODAL */
+    .edit-modal-overlay { position:fixed;inset:0;background:rgba(7,17,31,0.85);backdrop-filter:blur(8px);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.28s;padding:1rem; }
+    .edit-modal-overlay.open { opacity:1;pointer-events:all; }
+    .edit-modal-box { background:var(--white);border-radius:var(--radius);padding:2rem;width:100%;max-width:520px;box-shadow:var(--shadow-lg);transform:translateY(20px);transition:transform 0.28s;max-height:90vh;overflow-y:auto; }
+    .edit-modal-overlay.open .edit-modal-box { transform:translateY(0); }
+    .edit-modal-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--gray-100); }
+    .edit-modal-header h3 { font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--navy); }
+    .edit-modal-close { background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--gray-500);line-height:1;padding:4px; }
+    .edit-modal-close:hover { color:var(--navy); }
+    .edit-file-info { background:var(--off-white);border:1px solid var(--gray-100);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:1.25rem;font-size:0.82rem;color:var(--gray-500); }
+    .edit-file-info strong { color:var(--navy);display:block;margin-bottom:2px;font-size:0.88rem; }
+    .btn-edit { background:none;border:1.5px solid var(--gray-300);color:var(--gray-700);border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.28s;flex-shrink:0;white-space:nowrap; }
+    .btn-edit:hover { background:var(--off-white);border-color:var(--navy);color:var(--navy); }
+    .upload-zone-sm { border:2px dashed var(--gray-300);border-radius:var(--radius-sm);padding:1.25rem;text-align:center;cursor:pointer;transition:all 0.28s;background:var(--off-white);font-size:0.85rem; }
+    .upload-zone-sm:hover,.upload-zone-sm.drag-over { border-color:var(--navy);background:rgba(11,31,58,0.03); }
+    .optional-tag { font-size:0.72rem;color:var(--gray-500);font-weight:400;margin-left:4px; }
+  </style>
 </head>
 <body>
 
@@ -35,11 +53,10 @@
   <section class="admin-section">
     <div class="container">
 
-      <!-- TABS -->
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="materias">📚 Matérias</button>
         <button class="admin-tab" data-tab="secoes">📂 Seções</button>
-        <button class="admin-tab" data-tab="conteudos">📄 Conteúdos / Arquivos</button>
+        <button class="admin-tab" data-tab="conteudos">📄 Arquivos</button>
       </div>
 
       <!-- TAB: MATERIAS -->
@@ -48,8 +65,8 @@
           <div class="admin-form-card">
             <h3>➕ Nova Matéria</h3>
             <form id="formMateria">
-              <div class="form-group"><label>Nome da matéria *</label><input type="text" id="materiaNome" placeholder="Ex: Cálculo" required /></div>
-              <div class="form-group"><label>Descrição</label><textarea id="materiaDesc" placeholder="Breve descrição da matéria..."></textarea></div>
+              <div class="form-group"><label>Nome *</label><input type="text" id="materiaNome" placeholder="Ex: Cálculo" required /></div>
+              <div class="form-group"><label>Descrição</label><textarea id="materiaDesc" placeholder="Breve descrição..."></textarea></div>
               <button type="submit" class="btn-submit" id="btnMateria">Criar Matéria</button>
             </form>
           </div>
@@ -66,12 +83,9 @@
           <div class="admin-form-card">
             <h3>➕ Nova Seção</h3>
             <form id="formSecao">
-              <div class="form-group">
-                <label>Matéria *</label>
-                <select id="secaoMateria" required><option value="">Selecione...</option></select>
-              </div>
-              <div class="form-group"><label>Nome da seção *</label><input type="text" id="secaoNome" placeholder="Ex: Provas P1, Exercícios, Material de Apoio..." required /></div>
-              <div class="form-group"><label>Ordem (opcional)</label><input type="number" id="secaoOrdem" placeholder="0" min="0" /></div>
+              <div class="form-group"><label>Matéria *</label><select id="secaoMateria" required><option value="">Selecione...</option></select></div>
+              <div class="form-group"><label>Nome da seção *</label><input type="text" id="secaoNome" placeholder="Ex: Provas P1, Exercícios..." required /></div>
+              <div class="form-group"><label>Ordem</label><input type="number" id="secaoOrdem" placeholder="0" min="0" /></div>
               <button type="submit" class="btn-submit" id="btnSecao">Criar Seção</button>
             </form>
           </div>
@@ -86,28 +100,17 @@
       <div class="admin-tab-content" id="tab-conteudos">
         <div class="admin-grid">
           <div class="admin-form-card">
-            <h3>➕ Novo Arquivo / Conteúdo</h3>
+            <h3>➕ Novo Arquivo</h3>
             <form id="formConteudo">
-              <div class="form-group">
-                <label>Matéria *</label>
-                <select id="conteudoMateria" required><option value="">Selecione...</option></select>
-              </div>
-              <div class="form-group">
-                <label>Seção *</label>
-                <select id="conteudoSecao" required><option value="">Selecione a matéria primeiro</option></select>
-              </div>
-              <div class="form-group"><label>Nome do arquivo *</label><input type="text" id="conteudoNome" placeholder="Ex: Prova 1 — Limites e Derivadas" required /></div>
+              <div class="form-group"><label>Matéria *</label><select id="conteudoMateria" required><option value="">Selecione...</option></select></div>
+              <div class="form-group"><label>Seção *</label><select id="conteudoSecao" required><option value="">Selecione a matéria primeiro</option></select></div>
+              <div class="form-group"><label>Nome do arquivo *</label><input type="text" id="conteudoNome" placeholder="Ex: Prova 1 — Limites" required /></div>
               <div class="form-group">
                 <label>Tipo</label>
                 <select id="conteudoTipo">
-                  <option value="P1">P1</option>
-                  <option value="P2">P2</option>
-                  <option value="Final">Final</option>
-                  <option value="Substitutiva">Substitutiva</option>
-                  <option value="Exercício">Exercício</option>
-                  <option value="Material">Material</option>
-                  <option value="Resumo">Resumo</option>
-                  <option value="Outro">Outro</option>
+                  <option value="P1">P1</option><option value="P2">P2</option><option value="Final">Final</option>
+                  <option value="Substitutiva">Substitutiva</option><option value="Exercício">Exercício</option>
+                  <option value="Material">Material</option><option value="Resumo">Resumo</option><option value="Outro">Outro</option>
                 </select>
               </div>
               <div class="form-group"><label>Semestre/Ano</label><input type="text" id="conteudoSemestre" placeholder="Ex: 2024.2" /></div>
@@ -116,7 +119,7 @@
                 <div class="upload-zone" id="uploadZone">
                   <div class="upload-icon">📄</div>
                   <p><strong>Arraste o PDF aqui</strong> ou clique para selecionar</p>
-                  <p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">Somente arquivos .pdf</p>
+                  <p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">Somente .pdf</p>
                 </div>
                 <input type="file" id="fileInput" accept=".pdf" style="display:none" />
               </div>
@@ -125,8 +128,8 @@
           </div>
           <div class="admin-list-card">
             <h3>📋 Arquivos cadastrados</h3>
-            <div class="form-group" style="margin-bottom:1.25rem">
-              <select id="filterMateria" style="width:100%;border:1.5px solid var(--gray-100);border-radius:var(--radius-sm);padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);background:var(--off-white);outline:none;">
+            <div class="form-group" style="margin-bottom:1rem">
+              <select id="filterMateria" style="width:100%;border:1.5px solid var(--gray-100);border-radius:var(--radius-sm);padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);background:var(--off-white);outline:none;">
                 <option value="">Todas as matérias</option>
               </select>
             </div>
@@ -138,13 +141,59 @@
     </div>
   </section>
 
+  <!-- EDIT MODAL -->
+  <div class="edit-modal-overlay" id="editModal">
+    <div class="edit-modal-box">
+      <div class="edit-modal-header">
+        <h3>✏️ Editar Arquivo</h3>
+        <button class="edit-modal-close" id="editModalClose">✕</button>
+      </div>
+
+      <div class="edit-file-info" id="editFileInfo">
+        <strong>Arquivo atual:</strong>
+        <span id="editCurrentFile">—</span>
+      </div>
+
+      <form id="formEdit">
+        <input type="hidden" id="editId" />
+        <input type="hidden" id="editOldUrl" />
+
+        <div class="form-group"><label>Matéria *</label><select id="editMateria" required><option value="">Selecione...</option></select></div>
+        <div class="form-group"><label>Seção *</label><select id="editSecao" required><option value="">Selecione a matéria primeiro</option></select></div>
+        <div class="form-group"><label>Nome do arquivo *</label><input type="text" id="editNome" required /></div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="editTipo">
+            <option value="P1">P1</option><option value="P2">P2</option><option value="Final">Final</option>
+            <option value="Substitutiva">Substitutiva</option><option value="Exercício">Exercício</option>
+            <option value="Material">Material</option><option value="Resumo">Resumo</option><option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Semestre/Ano</label><input type="text" id="editSemestre" placeholder="Ex: 2024.2" /></div>
+        <div class="form-group">
+          <label>Substituir PDF <span class="optional-tag">(opcional — deixe vazio para manter o atual)</span></label>
+          <div class="upload-zone-sm" id="editUploadZone">
+            <p>📄 <strong>Clique ou arraste</strong> para trocar o PDF</p>
+            <p style="margin-top:4px;color:var(--gray-300);font-size:0.75rem">Somente .pdf</p>
+          </div>
+          <input type="file" id="editFileInput" accept=".pdf" style="display:none" />
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:0.5rem">
+          <button type="button" id="editCancelBtn" style="flex:1;background:none;border:1.5px solid var(--gray-100);color:var(--gray-500);border-radius:var(--radius-sm);padding:12px;font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:600;cursor:pointer;">Cancelar</button>
+          <button type="submit" class="btn-submit" id="btnEdit" style="flex:2;margin-top:0">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer class="footer">
     <div class="container">
       <div class="footer-inner">
         <div class="footer-brand"><span class="logo-text">IB<strong>Base</strong></span><p>Repositório de provas e materiais para estudantes universitários.</p></div>
         <div class="footer-links"><h5>Plataforma</h5><a href="index.html">Início</a><a href="index.html#materias">Matérias</a></div>
       </div>
-      <div class="footer-bottom"><p>© 2025 Ibbase.</p></div>
+      <div class="footer-bottom"><p>© 2025 IB Base.</p></div>
     </div>
   </footer>
 
@@ -171,8 +220,8 @@
     });
 
     let allMaterias = [];
-    let allSecoes = [];
     let selectedFile = null;
+    let editSelectedFile = null;
 
     // =====================
     //  MATERIAS
@@ -194,10 +243,9 @@
           </div>
         </div>`).join('');
       list.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', async () => {
-        if (!confirm('Remover matéria e todo seu conteúdo?')) return;
+        if (!confirm('Remover matéria e todo o conteúdo?')) return;
         await sb.from('materias').delete().eq('id', btn.dataset.id);
-        loadMaterias();
-        showToast('🗑️ Matéria removida!');
+        loadMaterias(); showToast('🗑️ Matéria removida!');
       }));
     }
 
@@ -206,7 +254,7 @@
       const btn = document.getElementById('btnMateria');
       btn.textContent = 'Salvando...'; btn.disabled = true;
       const { error } = await sb.from('materias').insert([{ nome: document.getElementById('materiaNome').value.trim(), descricao: document.getElementById('materiaDesc').value.trim() }]);
-      if (error) { showToast('❌ ' + error.message, 'error'); }
+      if (error) showToast('❌ ' + error.message, 'error');
       else { showToast('✅ Matéria criada!'); document.getElementById('formMateria').reset(); loadMaterias(); }
       btn.textContent = 'Criar Matéria'; btn.disabled = false;
     });
@@ -216,28 +264,39 @@
     // =====================
     async function loadMateriaSelects() {
       if (!allMaterias.length) { const { data } = await sb.from('materias').select('*').order('nome'); allMaterias = data || []; }
-      ['secaoMateria','conteudoMateria','filterMateria'].forEach(id => {
+      ['secaoMateria','conteudoMateria','filterMateria','editMateria'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         const cur = el.value;
-        el.innerHTML = `<option value="">${id==='filterMateria'?'Todas as matérias':'Selecione...'}</option>` + allMaterias.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+        el.innerHTML = `<option value="">${id==='filterMateria'?'Todas as matérias':'Selecione...'}</option>` + allMaterias.map(m=>`<option value="${m.id}">${m.nome}</option>`).join('');
         if (cur) el.value = cur;
       });
     }
+
+    async function loadSecoesForSelect(materiaId, selectId, currentVal='') {
+      const el = document.getElementById(selectId);
+      if (!materiaId) { el.innerHTML = '<option value="">Selecione a matéria primeiro</option>'; return; }
+      el.innerHTML = '<option value="">Carregando...</option>';
+      const { data } = await sb.from('secoes').select('*').eq('materia_id', materiaId).order('ordem');
+      el.innerHTML = '<option value="">Selecione a seção...</option>' + (data||[]).map(s=>`<option value="${s.id}">${s.nome}</option>`).join('');
+      if (currentVal) el.value = currentVal;
+    }
+
+    document.getElementById('conteudoMateria').addEventListener('change', function() { loadSecoesForSelect(this.value, 'conteudoSecao'); });
+    document.getElementById('editMateria').addEventListener('change', function() { loadSecoesForSelect(this.value, 'editSecao'); });
 
     // =====================
     //  SECOES
     // =====================
     async function loadSecoes() {
       const { data } = await sb.from('secoes').select('*, materias(nome)').order('ordem');
-      allSecoes = data || [];
       const list = document.getElementById('listSecoes');
-      if (!allSecoes.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhuma seção cadastrada.</p></div>`; return; }
-      list.innerHTML = allSecoes.map(s => `
+      if (!data?.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhuma seção cadastrada.</p></div>`; return; }
+      list.innerHTML = data.map(s => `
         <div class="admin-item" id="sec-${s.id}">
           <div class="admin-item-info">
             <span>📂 ${s.nome}</span>
-            <small>${s.materias?.nome || '—'} · ordem ${s.ordem}</small>
+            <small>${s.materias?.nome||'—'} · ordem ${s.ordem}</small>
           </div>
           <div class="admin-item-actions">
             <button class="btn-delete" data-id="${s.id}">Remover</button>
@@ -254,47 +313,41 @@
       e.preventDefault();
       const btn = document.getElementById('btnSecao');
       btn.textContent = 'Salvando...'; btn.disabled = true;
-      const { error } = await sb.from('secoes').insert([{
-        materia_id: document.getElementById('secaoMateria').value,
-        nome: document.getElementById('secaoNome').value.trim(),
-        ordem: parseInt(document.getElementById('secaoOrdem').value) || 0
-      }]);
-      if (error) { showToast('❌ ' + error.message, 'error'); }
+      const { error } = await sb.from('secoes').insert([{ materia_id: document.getElementById('secaoMateria').value, nome: document.getElementById('secaoNome').value.trim(), ordem: parseInt(document.getElementById('secaoOrdem').value)||0 }]);
+      if (error) showToast('❌ ' + error.message, 'error');
       else { showToast('✅ Seção criada!'); document.getElementById('formSecao').reset(); loadSecoes(); }
       btn.textContent = 'Criar Seção'; btn.disabled = false;
     });
 
-    // Load secoes for conteudo select when materia changes
-    document.getElementById('conteudoMateria').addEventListener('change', async function() {
-      const secaoSel = document.getElementById('conteudoSecao');
-      secaoSel.innerHTML = '<option value="">Carregando...</option>';
-      if (!this.value) { secaoSel.innerHTML = '<option value="">Selecione a matéria primeiro</option>'; return; }
-      const { data } = await sb.from('secoes').select('*').eq('materia_id', this.value).order('ordem');
-      secaoSel.innerHTML = '<option value="">Selecione a seção...</option>' + (data||[]).map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
-    });
+    // =====================
+    //  UPLOAD ZONES
+    // =====================
+    function setupUploadZone(zoneId, inputId, onFile) {
+      const zone  = document.getElementById(zoneId);
+      const input = document.getElementById(inputId);
+      zone.addEventListener('click', () => input.click());
+      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+      zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); if(e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0], zone); });
+      input.addEventListener('change', () => { if(input.files[0]) onFile(input.files[0], zone); });
+    }
+
+    function handleFile(file, zone, isMini=false) {
+      if (file.type !== 'application/pdf') { showToast('❌ Apenas PDF!', 'error'); return null; }
+      zone.innerHTML = `<p>✅ <strong>${file.name}</strong></p><p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">${(file.size/1024).toFixed(0)} KB — clique para trocar</p>`;
+      return file;
+    }
+
+    setupUploadZone('uploadZone', 'fileInput', (file, zone) => { selectedFile = handleFile(file, zone); });
+    setupUploadZone('editUploadZone', 'editFileInput', (file, zone) => { editSelectedFile = handleFile(file, zone, true); });
 
     // =====================
     //  CONTEUDOS
     // =====================
-    const uploadZone = document.getElementById('uploadZone');
-    const fileInput  = document.getElementById('fileInput');
-    uploadZone.addEventListener('click', () => fileInput.click());
-    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-    uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
-    fileInput.addEventListener('change', () => { if(fileInput.files[0]) setFile(fileInput.files[0]); });
-
-    function setFile(file) {
-      if (file.type !== 'application/pdf') { showToast('❌ Apenas PDF!', 'error'); return; }
-      selectedFile = file;
-      uploadZone.innerHTML = `<div class="upload-icon">✅</div><p><strong>${file.name}</strong></p><p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">${(file.size/1024).toFixed(0)} KB — clique para trocar</p>`;
-    }
-
     async function loadConteudos(filterMateriaId='') {
       const list = document.getElementById('listConteudos');
       list.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Carregando...</p></div>`;
-      let query = sb.from('conteudos').select('*, secoes(nome, materia_id, materias(nome))').order('criado_em', { ascending: false });
-      const { data } = await query;
+      const { data } = await sb.from('conteudos').select('*, secoes(id, nome, materia_id, materias(nome))').order('criado_em', { ascending: false });
       let items = data || [];
       if (filterMateriaId) items = items.filter(c => c.secoes?.materia_id === filterMateriaId);
       if (!items.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhum arquivo cadastrado.</p></div>`; return; }
@@ -302,13 +355,16 @@
         <div class="admin-item" id="con-${c.id}">
           <div class="admin-item-info">
             <span>📄 ${c.nome}</span>
-            <small>${c.secoes?.materias?.nome || '—'} › ${c.secoes?.nome || '—'} · ${c.tipo||''} ${c.semestre||''}</small>
+            <small>${c.secoes?.materias?.nome||'—'} › ${c.secoes?.nome||'—'} · ${c.tipo||''} ${c.semestre||''}</small>
           </div>
           <div class="admin-item-actions">
             <a href="${c.arquivo_url}" target="_blank" class="btn-view">Ver</a>
+            <button class="btn-edit" data-id="${c.id}">Editar</button>
             <button class="btn-delete" data-id="${c.id}" data-url="${c.arquivo_url}">Remover</button>
           </div>
         </div>`).join('');
+
+      // Delete
       list.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', async () => {
         if (!confirm('Remover arquivo?')) return;
         const path = btn.dataset.url.split('/provas-pdf/')[1];
@@ -316,6 +372,14 @@
         await sb.from('conteudos').delete().eq('id', btn.dataset.id);
         document.getElementById(`con-${btn.dataset.id}`)?.remove();
         showToast('🗑️ Arquivo removido!');
+      }));
+
+      // Edit — open modal
+      list.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const item = items.find(c => c.id === id);
+        if (!item) return;
+        await openEditModal(item);
       }));
     }
 
@@ -333,18 +397,105 @@
       btn.textContent = 'Enviando...'; btn.disabled = true;
       try {
         const fileName = `${Date.now()}_${selectedFile.name.replace(/\s/g,'_')}`;
-        const { error: upErr } = await sb.storage.from('provas-pdf').upload(fileName, selectedFile, { contentType: 'application/pdf' });
+        const { error: upErr } = await sb.storage.from('provas-pdf').upload(fileName, selectedFile, { contentType:'application/pdf' });
         if (upErr) throw upErr;
         const { data: urlData } = sb.storage.from('provas-pdf').getPublicUrl(fileName);
-        const { error: dbErr } = await sb.from('conteudos').insert([{ secao_id: secaoId, nome, tipo, semestre: sem||null, arquivo_url: urlData.publicUrl, tamanho_kb: Math.round(selectedFile.size/1024) }]);
+        const { error: dbErr } = await sb.from('conteudos').insert([{ secao_id:secaoId, nome, tipo, semestre:sem||null, arquivo_url:urlData.publicUrl, tamanho_kb:Math.round(selectedFile.size/1024) }]);
         if (dbErr) throw dbErr;
         showToast(`✅ "${nome}" adicionado!`);
         document.getElementById('formConteudo').reset();
         selectedFile = null;
-        uploadZone.innerHTML = `<div class="upload-icon">📄</div><p><strong>Arraste o PDF aqui</strong> ou clique para selecionar</p><p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">Somente arquivos .pdf</p>`;
+        document.getElementById('uploadZone').innerHTML = `<div class="upload-icon">📄</div><p><strong>Arraste o PDF aqui</strong> ou clique para selecionar</p><p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">Somente .pdf</p>`;
         loadConteudos(document.getElementById('filterMateria').value);
       } catch(err) { showToast('❌ Erro: '+err.message,'error'); }
       btn.textContent = 'Adicionar Arquivo'; btn.disabled = false;
+    });
+
+    // =====================
+    //  EDIT MODAL
+    // =====================
+    const editModal = document.getElementById('editModal');
+
+    async function openEditModal(item) {
+      await loadMateriaSelects();
+
+      // Set materia
+      document.getElementById('editMateria').value = item.secoes?.materia_id || '';
+      // Load secoes for this materia, then set secao
+      await loadSecoesForSelect(item.secoes?.materia_id, 'editSecao', item.secao_id);
+
+      document.getElementById('editId').value       = item.id;
+      document.getElementById('editOldUrl').value   = item.arquivo_url;
+      document.getElementById('editNome').value     = item.nome;
+      document.getElementById('editTipo').value     = item.tipo || 'Outro';
+      document.getElementById('editSemestre').value = item.semestre || '';
+
+      // Show current file name
+      const fileName = item.arquivo_url.split('/').pop().replace(/^\d+_/, '');
+      document.getElementById('editCurrentFile').textContent = decodeURIComponent(fileName);
+
+      // Reset upload zone
+      editSelectedFile = null;
+      document.getElementById('editUploadZone').innerHTML = `<p>📄 <strong>Clique ou arraste</strong> para trocar o PDF</p><p style="margin-top:4px;color:var(--gray-300);font-size:0.75rem">Somente .pdf</p>`;
+      document.getElementById('editFileInput').value = '';
+
+      editModal.classList.add('open');
+    }
+
+    function closeEditModal() {
+      editModal.classList.remove('open');
+      editSelectedFile = null;
+    }
+
+    document.getElementById('editModalClose').addEventListener('click', closeEditModal);
+    document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
+    editModal.addEventListener('click', e => { if(e.target === editModal) closeEditModal(); });
+
+    document.getElementById('formEdit').addEventListener('submit', async e => {
+      e.preventDefault();
+      const id       = document.getElementById('editId').value;
+      const oldUrl   = document.getElementById('editOldUrl').value;
+      const secaoId  = document.getElementById('editSecao').value;
+      const nome     = document.getElementById('editNome').value.trim();
+      const tipo     = document.getElementById('editTipo').value;
+      const semestre = document.getElementById('editSemestre').value.trim();
+
+      if (!secaoId || !nome) { showToast('⚠️ Preencha todos os campos.', 'warning'); return; }
+
+      const btn = document.getElementById('btnEdit');
+      btn.textContent = 'Salvando...'; btn.disabled = true;
+
+      try {
+        let arquivo_url = oldUrl;
+        let tamanho_kb  = null;
+
+        // If new file selected, upload and replace
+        if (editSelectedFile) {
+          const fileName = `${Date.now()}_${editSelectedFile.name.replace(/\s/g,'_')}`;
+          const { error: upErr } = await sb.storage.from('provas-pdf').upload(fileName, editSelectedFile, { contentType:'application/pdf' });
+          if (upErr) throw upErr;
+          const { data: urlData } = sb.storage.from('provas-pdf').getPublicUrl(fileName);
+          arquivo_url = urlData.publicUrl;
+          tamanho_kb  = Math.round(editSelectedFile.size / 1024);
+          // Delete old file
+          const oldPath = oldUrl.split('/provas-pdf/')[1];
+          if (oldPath) await sb.storage.from('provas-pdf').remove([oldPath]);
+        }
+
+        const updateData = { secao_id:secaoId, nome, tipo, semestre:semestre||null, arquivo_url };
+        if (tamanho_kb) updateData.tamanho_kb = tamanho_kb;
+
+        const { error: dbErr } = await sb.from('conteudos').update(updateData).eq('id', id);
+        if (dbErr) throw dbErr;
+
+        showToast(`✅ "${nome}" atualizado!`);
+        closeEditModal();
+        loadConteudos(document.getElementById('filterMateria').value);
+      } catch(err) {
+        showToast('❌ Erro: ' + err.message, 'error');
+      }
+
+      btn.textContent = 'Salvar Alterações'; btn.disabled = false;
     });
 
     // INIT
