@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — ProvaBase</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo"><span class="logo-icon">📚</span><span class="logo-text">Prova<strong>Base</strong></span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="index.html#materias">Matérias</a></li>
+        <li><a href="#" id="logoutBtn" style="color:#F5A623">Sair</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <a href="index.html">Início</a><a href="index.html#materias">Matérias</a><a href="#" id="logoutBtnMobile">Sair</a>
+    </div>
+  </nav>
+
+  <header class="admin-hero">
+    <div class="animate-fade-up">
+      <div class="hero-badge" style="margin-bottom:1rem"><span class="dot"></span> Área do Administrador</div>
+      <h1>Painel Administrativo</h1>
+      <p>Gerencie matérias, seções e conteúdos do repositório.</p>
+    </div>
+  </header>
+
+  <section class="admin-section">
+    <div class="container">
+
+      <!-- TABS -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="materias">📚 Matérias</button>
+        <button class="admin-tab" data-tab="secoes">📂 Seções</button>
+        <button class="admin-tab" data-tab="conteudos">📄 Conteúdos / Arquivos</button>
+      </div>
+
+      <!-- TAB: MATERIAS -->
+      <div class="admin-tab-content active" id="tab-materias">
+        <div class="admin-grid">
+          <div class="admin-form-card">
+            <h3>➕ Nova Matéria</h3>
+            <form id="formMateria">
+              <div class="form-group"><label>Nome da matéria *</label><input type="text" id="materiaNome" placeholder="Ex: Cálculo" required /></div>
+              <div class="form-group"><label>Descrição</label><textarea id="materiaDesc" placeholder="Breve descrição da matéria..."></textarea></div>
+              <button type="submit" class="btn-submit" id="btnMateria">Criar Matéria</button>
+            </form>
+          </div>
+          <div class="admin-list-card">
+            <h3>📋 Matérias cadastradas</h3>
+            <div id="listMaterias"><div class="loading-state"><div class="spinner"></div><p>Carregando...</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SECOES -->
+      <div class="admin-tab-content" id="tab-secoes">
+        <div class="admin-grid">
+          <div class="admin-form-card">
+            <h3>➕ Nova Seção</h3>
+            <form id="formSecao">
+              <div class="form-group">
+                <label>Matéria *</label>
+                <select id="secaoMateria" required><option value="">Selecione...</option></select>
+              </div>
+              <div class="form-group"><label>Nome da seção *</label><input type="text" id="secaoNome" placeholder="Ex: Provas P1, Exercícios, Material de Apoio..." required /></div>
+              <div class="form-group"><label>Ordem (opcional)</label><input type="number" id="secaoOrdem" placeholder="0" min="0" /></div>
+              <button type="submit" class="btn-submit" id="btnSecao">Criar Seção</button>
+            </form>
+          </div>
+          <div class="admin-list-card">
+            <h3>📋 Seções cadastradas</h3>
+            <div id="listSecoes"><div class="loading-state"><div class="spinner"></div><p>Carregando...</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: CONTEUDOS -->
+      <div class="admin-tab-content" id="tab-conteudos">
+        <div class="admin-grid">
+          <div class="admin-form-card">
+            <h3>➕ Novo Arquivo / Conteúdo</h3>
+            <form id="formConteudo">
+              <div class="form-group">
+                <label>Matéria *</label>
+                <select id="conteudoMateria" required><option value="">Selecione...</option></select>
+              </div>
+              <div class="form-group">
+                <label>Seção *</label>
+                <select id="conteudoSecao" required><option value="">Selecione a matéria primeiro</option></select>
+              </div>
+              <div class="form-group"><label>Nome do arquivo *</label><input type="text" id="conteudoNome" placeholder="Ex: Prova 1 — Limites e Derivadas" required /></div>
+              <div class="form-group">
+                <label>Tipo</label>
+                <select id="conteudoTipo">
+                  <option value="P1">P1</option>
+                  <option value="P2">P2</option>
+                  <option value="Final">Final</option>
+                  <option value="Substitutiva">Substitutiva</option>
+                  <option value="Exercício">Exercício</option>
+                  <option value="Material">Material</option>
+                  <option value="Resumo">Resumo</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Semestre/Ano</label><input type="text" id="conteudoSemestre" placeholder="Ex: 2024.2" /></div>
+              <div class="form-group">
+                <label>Arquivo PDF *</label>
+                <div class="upload-zone" id="uploadZone">
+                  <div class="upload-icon">📄</div>
+                  <p><strong>Arraste o PDF aqui</strong> ou clique para selecionar</p>
+                  <p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">Somente arquivos .pdf</p>
+                </div>
+                <input type="file" id="fileInput" accept=".pdf" style="display:none" />
+              </div>
+              <button type="submit" class="btn-submit" id="btnConteudo">Adicionar Arquivo</button>
+            </form>
+          </div>
+          <div class="admin-list-card">
+            <h3>📋 Arquivos cadastrados</h3>
+            <div class="form-group" style="margin-bottom:1.25rem">
+              <select id="filterMateria" style="width:100%;border:1.5px solid var(--gray-100);border-radius:var(--radius-sm);padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);background:var(--off-white);outline:none;">
+                <option value="">Todas as matérias</option>
+              </select>
+            </div>
+            <div id="listConteudos"><div class="loading-state"><div class="spinner"></div><p>Carregando...</p></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand"><span class="logo-text">Prova<strong>Base</strong></span><p>Repositório de provas e materiais para estudantes universitários.</p></div>
+        <div class="footer-links"><h5>Plataforma</h5><a href="index.html">Início</a><a href="index.html#materias">Matérias</a></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 ProvaBase.</p></div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const sb = createClient('https://wkvevriartrmlzwduqdm.supabase.co','sb_publishable_EHcv5fzl0Cm5s7hp2lVc0Q_e9YOyuKi');
+
+    // Auth guard
+    if (!sessionStorage.getItem('admin_auth')) { location.href = 'index.html'; }
+    document.getElementById('logoutBtn')?.addEventListener('click', e => { e.preventDefault(); sessionStorage.removeItem('admin_auth'); location.href='index.html'; });
+    document.getElementById('logoutBtnMobile')?.addEventListener('click', e => { e.preventDefault(); sessionStorage.removeItem('admin_auth'); location.href='index.html'; });
+
+    // TABS
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'secoes') { loadMateriaSelects(); loadSecoes(); }
+        if (tab.dataset.tab === 'conteudos') { loadMateriaSelects(); loadConteudos(); }
+      });
+    });
+
+    let allMaterias = [];
+    let allSecoes = [];
+    let selectedFile = null;
+
+    // =====================
+    //  MATERIAS
+    // =====================
+    async function loadMaterias() {
+      const { data } = await sb.from('materias').select('*').order('nome');
+      allMaterias = data || [];
+      const list = document.getElementById('listMaterias');
+      if (!allMaterias.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhuma matéria cadastrada.</p></div>`; return; }
+      list.innerHTML = allMaterias.map(m => `
+        <div class="admin-item" id="mat-${m.id}">
+          <div class="admin-item-info">
+            <span>📚 ${m.nome}</span>
+            <small>${m.descricao || '—'}</small>
+          </div>
+          <div class="admin-item-actions">
+            <a href="materia.html?id=${m.id}" target="_blank" class="btn-view">Ver</a>
+            <button class="btn-delete" data-id="${m.id}">Remover</button>
+          </div>
+        </div>`).join('');
+      list.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', async () => {
+        if (!confirm('Remover matéria e todo seu conteúdo?')) return;
+        await sb.from('materias').delete().eq('id', btn.dataset.id);
+        loadMaterias();
+        showToast('🗑️ Matéria removida!');
+      }));
+    }
+
+    document.getElementById('formMateria').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = document.getElementById('btnMateria');
+      btn.textContent = 'Salvando...'; btn.disabled = true;
+      const { error } = await sb.from('materias').insert([{ nome: document.getElementById('materiaNome').value.trim(), descricao: document.getElementById('materiaDesc').value.trim() }]);
+      if (error) { showToast('❌ ' + error.message, 'error'); }
+      else { showToast('✅ Matéria criada!'); document.getElementById('formMateria').reset(); loadMaterias(); }
+      btn.textContent = 'Criar Matéria'; btn.disabled = false;
+    });
+
+    // =====================
+    //  SELECTS
+    // =====================
+    async function loadMateriaSelects() {
+      if (!allMaterias.length) { const { data } = await sb.from('materias').select('*').order('nome'); allMaterias = data || []; }
+      ['secaoMateria','conteudoMateria','filterMateria'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const cur = el.value;
+        el.innerHTML = `<option value="">${id==='filterMateria'?'Todas as matérias':'Selecione...'}</option>` + allMaterias.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+        if (cur) el.value = cur;
+      });
+    }
+
+    // =====================
+    //  SECOES
+    // =====================
+    async function loadSecoes() {
+      const { data } = await sb.from('secoes').select('*, materias(nome)').order('ordem');
+      allSecoes = data || [];
+      const list = document.getElementById('listSecoes');
+      if (!allSecoes.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhuma seção cadastrada.</p></div>`; return; }
+      list.innerHTML = allSecoes.map(s => `
+        <div class="admin-item" id="sec-${s.id}">
+          <div class="admin-item-info">
+            <span>📂 ${s.nome}</span>
+            <small>${s.materias?.nome || '—'} · ordem ${s.ordem}</small>
+          </div>
+          <div class="admin-item-actions">
+            <button class="btn-delete" data-id="${s.id}">Remover</button>
+          </div>
+        </div>`).join('');
+      list.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', async () => {
+        if (!confirm('Remover seção e todos os arquivos?')) return;
+        await sb.from('secoes').delete().eq('id', btn.dataset.id);
+        loadSecoes(); showToast('🗑️ Seção removida!');
+      }));
+    }
+
+    document.getElementById('formSecao').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSecao');
+      btn.textContent = 'Salvando...'; btn.disabled = true;
+      const { error } = await sb.from('secoes').insert([{
+        materia_id: document.getElementById('secaoMateria').value,
+        nome: document.getElementById('secaoNome').value.trim(),
+        ordem: parseInt(document.getElementById('secaoOrdem').value) || 0
+      }]);
+      if (error) { showToast('❌ ' + error.message, 'error'); }
+      else { showToast('✅ Seção criada!'); document.getElementById('formSecao').reset(); loadSecoes(); }
+      btn.textContent = 'Criar Seção'; btn.disabled = false;
+    });
+
+    // Load secoes for conteudo select when materia changes
+    document.getElementById('conteudoMateria').addEventListener('change', async function() {
+      const secaoSel = document.getElementById('conteudoSecao');
+      secaoSel.innerHTML = '<option value="">Carregando...</option>';
+      if (!this.value) { secaoSel.innerHTML = '<option value="">Selecione a matéria primeiro</option>'; return; }
+      const { data } = await sb.from('secoes').select('*').eq('materia_id', this.value).order('ordem');
+      secaoSel.innerHTML = '<option value="">Selecione a seção...</option>' + (data||[]).map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
+    });
+
+    // =====================
+    //  CONTEUDOS
+    // =====================
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput  = document.getElementById('fileInput');
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+    uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+    fileInput.addEventListener('change', () => { if(fileInput.files[0]) setFile(fileInput.files[0]); });
+
+    function setFile(file) {
+      if (file.type !== 'application/pdf') { showToast('❌ Apenas PDF!', 'error'); return; }
+      selectedFile = file;
+      uploadZone.innerHTML = `<div class="upload-icon">✅</div><p><strong>${file.name}</strong></p><p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">${(file.size/1024).toFixed(0)} KB — clique para trocar</p>`;
+    }
+
+    async function loadConteudos(filterMateriaId='') {
+      const list = document.getElementById('listConteudos');
+      list.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Carregando...</p></div>`;
+      let query = sb.from('conteudos').select('*, secoes(nome, materia_id, materias(nome))').order('criado_em', { ascending: false });
+      const { data } = await query;
+      let items = data || [];
+      if (filterMateriaId) items = items.filter(c => c.secoes?.materia_id === filterMateriaId);
+      if (!items.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhum arquivo cadastrado.</p></div>`; return; }
+      list.innerHTML = items.map(c => `
+        <div class="admin-item" id="con-${c.id}">
+          <div class="admin-item-info">
+            <span>📄 ${c.nome}</span>
+            <small>${c.secoes?.materias?.nome || '—'} › ${c.secoes?.nome || '—'} · ${c.tipo||''} ${c.semestre||''}</small>
+          </div>
+          <div class="admin-item-actions">
+            <a href="${c.arquivo_url}" target="_blank" class="btn-view">Ver</a>
+            <button class="btn-delete" data-id="${c.id}" data-url="${c.arquivo_url}">Remover</button>
+          </div>
+        </div>`).join('');
+      list.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', async () => {
+        if (!confirm('Remover arquivo?')) return;
+        const path = btn.dataset.url.split('/provas-pdf/')[1];
+        if (path) await sb.storage.from('provas-pdf').remove([path]);
+        await sb.from('conteudos').delete().eq('id', btn.dataset.id);
+        document.getElementById(`con-${btn.dataset.id}`)?.remove();
+        showToast('🗑️ Arquivo removido!');
+      }));
+    }
+
+    document.getElementById('filterMateria').addEventListener('change', function() { loadConteudos(this.value); });
+
+    document.getElementById('formConteudo').addEventListener('submit', async e => {
+      e.preventDefault();
+      const secaoId = document.getElementById('conteudoSecao').value;
+      const nome    = document.getElementById('conteudoNome').value.trim();
+      const tipo    = document.getElementById('conteudoTipo').value;
+      const sem     = document.getElementById('conteudoSemestre').value.trim();
+      if (!secaoId || !nome) { showToast('⚠️ Preencha todos os campos.', 'warning'); return; }
+      if (!selectedFile) { showToast('⚠️ Selecione um PDF.', 'warning'); return; }
+      const btn = document.getElementById('btnConteudo');
+      btn.textContent = 'Enviando...'; btn.disabled = true;
+      try {
+        const fileName = `${Date.now()}_${selectedFile.name.replace(/\s/g,'_')}`;
+        const { error: upErr } = await sb.storage.from('provas-pdf').upload(fileName, selectedFile, { contentType: 'application/pdf' });
+        if (upErr) throw upErr;
+        const { data: urlData } = sb.storage.from('provas-pdf').getPublicUrl(fileName);
+        const { error: dbErr } = await sb.from('conteudos').insert([{ secao_id: secaoId, nome, tipo, semestre: sem||null, arquivo_url: urlData.publicUrl, tamanho_kb: Math.round(selectedFile.size/1024) }]);
+        if (dbErr) throw dbErr;
+        showToast(`✅ "${nome}" adicionado!`);
+        document.getElementById('formConteudo').reset();
+        selectedFile = null;
+        uploadZone.innerHTML = `<div class="upload-icon">📄</div><p><strong>Arraste o PDF aqui</strong> ou clique para selecionar</p><p style="margin-top:4px;color:var(--gray-300);font-size:0.8rem">Somente arquivos .pdf</p>`;
+        loadConteudos(document.getElementById('filterMateria').value);
+      } catch(err) { showToast('❌ Erro: '+err.message,'error'); }
+      btn.textContent = 'Adicionar Arquivo'; btn.disabled = false;
+    });
+
+    // INIT
+    loadMaterias();
+    loadMateriaSelects();
+    loadConteudos();
+  </script>
+</body>
+</html>

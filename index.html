@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProvaBase — Repositório de Provas</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">📚</span>
+        <span class="logo-text">Prova<strong>Base</strong></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Início</a></li>
+        <li><a href="#materias">Matérias</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <a href="index.html">Início</a>
+      <a href="#materias">Matérias</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge animate-fade-up" style="animation-delay:0.1s">
+        <span class="dot"></span> Acesso gratuito para todos os estudantes
+      </div>
+      <h1 class="hero-title animate-fade-up" style="animation-delay:0.2s">
+        Seu repositório de<br /><em>provas antigas</em>
+      </h1>
+      <p class="hero-sub animate-fade-up" style="animation-delay:0.35s">
+        Encontre, estude e se prepare com provas reais de semestres anteriores. Organizado por matéria e seção.
+      </p>
+      <div class="hero-search animate-fade-up" style="animation-delay:0.5s">
+        <div class="search-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="searchInput" placeholder="Buscar matéria..." />
+        </div>
+        <button class="btn-primary" onclick="doSearch()">Pesquisar</button>
+      </div>
+      <div class="hero-stats animate-fade-up" style="animation-delay:0.65s">
+        <div class="stat"><strong id="statMaterias">—</strong><span>Matérias</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><strong id="statConteudos">—</strong><span>Arquivos</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><strong>100%</strong><span>Gratuito</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MATERIAS -->
+  <section class="materias-section" id="materias">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Navegue por</span>
+        <h2 class="section-title">Matérias disponíveis</h2>
+        <p class="section-desc">Selecione uma matéria para acessar todo o conteúdo disponível.</p>
+      </div>
+      <div class="cards-grid" id="materiasGrid">
+        <div class="loading-state" style="grid-column:1/-1">
+          <div class="spinner"></div><p>Carregando matérias...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section class="how-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Como funciona</span>
+        <h2 class="section-title">Simples e rápido</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step"><div class="step-num">01</div><h4>Escolha a matéria</h4><p>Navegue pelas matérias disponíveis.</p></div>
+        <div class="step"><div class="step-num">02</div><h4>Acesse a seção</h4><p>Encontre provas, exercícios ou materiais.</p></div>
+        <div class="step"><div class="step-num">03</div><h4>Baixe o PDF</h4><p>Clique em download e estude!</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="logo-text">Prova<strong>Base</strong></span>
+          <p>Repositório de provas e materiais para estudantes universitários.</p>
+        </div>
+        <div class="footer-links">
+          <h5>Matérias</h5>
+          <div id="footerMaterias"><a href="#materias">Ver todas</a></div>
+        </div>
+        <div class="footer-links">
+          <h5>Plataforma</h5>
+          <a href="index.html">Início</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 ProvaBase. Feito para estudantes, por estudantes.</p>
+        <a href="#" id="adminSecretLink" class="admin-secret-link">⚙</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LOGIN MODAL -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <h2>🔒 Área Admin</h2>
+      <p>Digite suas credenciais para continuar.</p>
+      <div class="modal-error" id="loginError"></div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Usuário</label>
+          <input type="text" id="loginUser" placeholder="Digite o usuário" required autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginPass" placeholder="Digite a senha" required />
+        </div>
+        <button type="submit" class="btn-submit">Entrar</button>
+        <button type="button" id="loginCancel" style="width:100%;margin-top:8px;background:none;border:none;color:var(--gray-500);cursor:pointer;font-size:0.9rem;padding:8px;">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const sb = createClient('https://wkvevriartrmlzwduqdm.supabase.co','sb_publishable_EHcv5fzl0Cm5s7hp2lVc0Q_e9YOyuKi');
+
+    async function load() {
+      const { data: materias } = await sb.from('materias').select('id, nome, descricao').order('nome');
+      const { count: totalConteudos } = await sb.from('conteudos').select('*', { count: 'exact', head: true });
+
+      document.getElementById('statMaterias').textContent = materias?.length || 0;
+      document.getElementById('statConteudos').textContent = totalConteudos || 0;
+
+      const grid = document.getElementById('materiasGrid');
+      const footerList = document.getElementById('footerMaterias');
+
+      if (!materias?.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><p>Nenhuma matéria cadastrada ainda.<br>O administrador irá adicionar em breve!</p></div>`;
+        return;
+      }
+
+      // Count conteudos per materia via secoes
+      const { data: secoes } = await sb.from('secoes').select('id, materia_id');
+      const { data: conteudos } = await sb.from('conteudos').select('id, secao_id');
+
+      const secaoMap = {};
+      secoes?.forEach(s => { secaoMap[s.id] = s.materia_id; });
+
+      const countMap = {};
+      conteudos?.forEach(c => {
+        const mid = secaoMap[c.secao_id];
+        if (mid) countMap[mid] = (countMap[mid] || 0) + 1;
+      });
+
+      grid.innerHTML = materias.map(m => `
+        <a href="materia.html?id=${m.id}" class="materia-card">
+          <div class="card-glow"></div>
+          <div class="card-badge">${countMap[m.id] || 0} arquivo${(countMap[m.id] || 0) !== 1 ? 's' : ''}</div>
+          <h3 class="card-title">${m.nome}</h3>
+          <p class="card-desc">${m.descricao || 'Acesse provas e materiais desta matéria.'}</p>
+          <div class="card-meta">
+            <span>Ver conteúdo</span>
+            <span class="card-arrow">→</span>
+          </div>
+        </a>`).join('');
+
+      footerList.innerHTML = materias.slice(0,5).map(m => `<a href="materia.html?id=${m.id}">${m.nome}</a>`).join('');
+
+      // Scroll reveal
+      document.querySelectorAll('.materia-card').forEach(el => {
+        el.style.opacity='0'; el.style.transform='translateY(24px)'; el.style.transition='opacity 0.6s ease, transform 0.6s ease';
+        new IntersectionObserver(([e]) => { if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';}},{threshold:0.1}).observe(el);
+      });
+    }
+
+    load();
+  </script>
+</body>
+</html>

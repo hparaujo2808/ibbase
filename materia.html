@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matéria — ProvaBase</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">📚</span>
+        <span class="logo-text">Prova<strong>Base</strong></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="index.html#materias">Matérias</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <a href="index.html">Início</a><a href="index.html#materias">Matérias</a>
+    </div>
+  </nav>
+
+  <header class="materia-hero" id="materiaHero">
+    <div class="container materia-hero-content animate-fade-up">
+      <div class="breadcrumb">
+        <a href="index.html">Início</a><span>›</span>
+        <span id="breadcrumbNome">Matéria</span>
+      </div>
+      <h1 id="materiaTitle">Carregando...</h1>
+      <p id="materiaDesc"></p>
+      <div class="materia-meta">
+        <span class="meta-pill" id="totalPill">📄 —</span>
+        <span class="meta-pill" id="secoesPill">📂 —</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="secoes-section">
+    <div class="container">
+      <div id="secoesContainer">
+        <div class="loading-state"><div class="spinner"></div><p>Carregando conteúdo...</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand"><span class="logo-text">Prova<strong>Base</strong></span><p>Repositório de provas e materiais para estudantes universitários.</p></div>
+        <div class="footer-links"><h5>Plataforma</h5><a href="index.html">Início</a><a href="index.html#materias">Matérias</a></div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 ProvaBase. Feito para estudantes, por estudantes.</p>
+        <a href="#" id="adminSecretLink" class="admin-secret-link">⚙</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LOGIN MODAL -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <h2>🔒 Área Admin</h2>
+      <p>Digite suas credenciais para continuar.</p>
+      <div class="modal-error" id="loginError"></div>
+      <form id="loginForm">
+        <div class="form-group"><label>Usuário</label><input type="text" id="loginUser" placeholder="Digite o usuário" required autocomplete="off" /></div>
+        <div class="form-group"><label>Senha</label><input type="password" id="loginPass" placeholder="Digite a senha" required /></div>
+        <button type="submit" class="btn-submit">Entrar</button>
+        <button type="button" id="loginCancel" style="width:100%;margin-top:8px;background:none;border:none;color:var(--gray-500);cursor:pointer;font-size:0.9rem;padding:8px;">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const sb = createClient('https://wkvevriartrmlzwduqdm.supabase.co','sb_publishable_EHcv5fzl0Cm5s7hp2lVc0Q_e9YOyuKi');
+
+    const params = new URLSearchParams(location.search);
+    const materiaId = params.get('id');
+    if (!materiaId) { location.href = 'index.html'; }
+
+    async function load() {
+      const { data: materia } = await sb.from('materias').select('*').eq('id', materiaId).single();
+      if (!materia) { location.href = 'index.html'; return; }
+
+      document.title = `${materia.nome} — ProvaBase`;
+      document.getElementById('breadcrumbNome').textContent = materia.nome;
+      document.getElementById('materiaTitle').textContent = materia.nome;
+      document.getElementById('materiaDesc').textContent = materia.descricao || '';
+
+      const { data: secoes } = await sb.from('secoes').select('*').eq('materia_id', materiaId).order('ordem');
+      const { data: conteudos } = await sb.from('conteudos').select('*').order('criado_em', { ascending: false });
+
+      const totalConteudos = conteudos?.filter(c => secoes?.some(s => s.id === c.secao_id)).length || 0;
+      document.getElementById('totalPill').textContent = `📄 ${totalConteudos} arquivo${totalConteudos !== 1 ? 's' : ''}`;
+      document.getElementById('secoesPill').textContent = `📂 ${secoes?.length || 0} seção/seções`;
+
+      const container = document.getElementById('secoesContainer');
+
+      if (!secoes?.length) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhuma seção cadastrada ainda.</p></div>`;
+        return;
+      }
+
+      container.innerHTML = secoes.map(secao => {
+        const secoesConteudos = conteudos?.filter(c => c.secao_id === secao.id) || [];
+        return `
+          <div class="secao-block">
+            <div class="secao-header">
+              <h2 class="secao-title">${secao.nome}</h2>
+              <span class="secao-count">${secoesConteudos.length} arquivo${secoesConteudos.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="conteudos-grid">
+              ${secoesConteudos.length ? secoesConteudos.map(c => `
+                <div class="conteudo-card">
+                  <div class="conteudo-file-icon">📄</div>
+                  <div class="conteudo-info">
+                    <div class="conteudo-name">${c.nome}</div>
+                    <div class="conteudo-tags">
+                      ${c.semestre ? `<span class="conteudo-tag">${c.semestre}</span>` : ''}
+                      ${c.tipo ? `<span class="conteudo-tag tipo">${c.tipo}</span>` : ''}
+                      ${c.tamanho_kb ? `<span class="conteudo-tag">${c.tamanho_kb} KB</span>` : ''}
+                    </div>
+                  </div>
+                  <a class="btn-download" href="${c.arquivo_url}" target="_blank" download>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Baixar
+                  </a>
+                </div>`).join('') : `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhum arquivo nesta seção ainda.</p></div>`}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    load();
+  </script>
+</body>
+</html>
